@@ -32,7 +32,7 @@ func NewUploader(sugar *zap.SugaredLogger, accountName, accountKey, containerNam
 func (u *Uploader) Upload(filePath string) error {
 	u.sugar.Infow("upload begin", "path", filePath)
 
-	file, err := os.Open(filePath)
+	file, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
 		return fmt.Errorf("failed to open file; %w", err)
 	}
