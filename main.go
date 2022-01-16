@@ -12,7 +12,7 @@ import (
 )
 
 var command = &cobra.Command{
-	Use:  "azure-blob-upload",
+	Use:  "azure-blob-upload srcDirectory container",
 	Run:  run,
 	Args: cobra.ExactArgs(2),
 }
