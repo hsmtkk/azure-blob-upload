@@ -4,9 +4,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sync"
 
-	"github.com/hsmtkk/azure-blob-upload/work"
+	"github.com/hsmtkk/azure-blob-upload/upload"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )
@@ -17,10 +16,7 @@ var command = &cobra.Command{
 	Args: cobra.ExactArgs(2),
 }
 
-var numOfWorkers int
-
 func init() {
-	command.Flags().IntVar(&numOfWorkers, "numOfWorkers", 4, "number of workers")
 }
 
 func main() {
@@ -48,24 +44,15 @@ func run(cmd *cobra.Command, args []string) {
 		log.Fatalf("failed to read directory; %s; %s", srcDirectory, err)
 	}
 
-	var wg sync.WaitGroup
-	filePathChan := make(chan string)
-	for i := 0; i < numOfWorkers; i++ {
-		worker := work.NewWorker(sugar, accountName, accountKey, container, i, filePathChan)
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			worker.Run()
-		}()
-	}
+	uploader := upload.NewUploader(sugar, accountName, accountKey, container)
 
 	for _, entry := range entries {
-		path := filepath.Join(srcDirectory, entry.Name())
-		filePathChan <- path
+		fileName := entry.Name()
+		filePath := filepath.Join(srcDirectory, fileName)
+		if err := uploader.Upload(filePath); err != nil {
+			sugar.Errorw("failed to upload file", "name", fileName)
+		}
 	}
-	close(filePathChan)
-
-	wg.Wait()
 }
 
 func requiredEnv(key string) string {
