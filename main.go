@@ -48,10 +48,12 @@ func run(cmd *cobra.Command, args []string) {
 
 	for _, entry := range entries {
 		fileName := entry.Name()
+		sugar.Infow("start", "name", fileName)
 		filePath := filepath.Join(srcDirectory, fileName)
 		if err := uploader.Upload(filePath); err != nil {
 			sugar.Errorw("failed to upload file", "name", fileName)
 		}
+		sugar.Infow("end", "name", fileName)
 	}
 }
 
