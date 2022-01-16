@@ -1,0 +1,12 @@
+---
+name: gosec
+on: [push]  # yamllint disable-line rule:truthy
+jobs:
+  gosec:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@master
+        with:
+          args: ./...
