@@ -36,7 +36,11 @@ func (u *Uploader) Upload(filePath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to open file; %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			u.sugar.Errorw("failed to close file", "error", err)
+		}
+	}()
 
 	fileName := filepath.Base(filePath)
 	blockBlob := u.container.NewBlockBlobClient(fileName)
