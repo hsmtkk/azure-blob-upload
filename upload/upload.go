@@ -33,7 +33,10 @@ func (u *Uploader) Upload(filePath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to init client; %w", err)
 	}
-	container := serviceClient.NewContainerClient(u.containerName)
+	container, err := serviceClient.NewContainerClient(u.containerName)
+	if err != nil {
+		return fmt.Errorf("failed to init container client; %w", err)
+	}
 
 	file, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
@@ -45,10 +48,11 @@ func (u *Uploader) Upload(filePath string) error {
 		}
 	}()
 
-	blockBlob := container.NewBlockBlobClient(fileName)
-	option := azblob.HighLevelUploadToBlockBlobOption{}
-	_, err = blockBlob.UploadFileToBlockBlob(context.Background(), file, option)
+	blockBlob, err := container.NewBlockBlobClient(fileName)
 	if err != nil {
+		return fmt.Errorf("failed to init block blob client; %w", err)
+	}
+	if _, err := blockBlob.UploadFile(context.Background(), file, azblob.UploadOption{}); err != nil {
 		return fmt.Errorf("failed to upload file; %w", err)
 	}
 
